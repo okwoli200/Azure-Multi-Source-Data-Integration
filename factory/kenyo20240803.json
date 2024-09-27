@@ -1,0 +1,9 @@
+{
+	"name": "kenyo20240803",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "8e74d8eb-cdae-480f-ae61-fa82b5d42044",
+		"tenantId": "d8959470-d491-40cb-85bc-716d17abdc62"
+	}
+}
