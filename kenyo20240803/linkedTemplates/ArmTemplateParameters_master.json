@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "kenyo20240803"
+		},
+		"ADLS_Link_accountKey": {
+			"value": ""
+		},
+		"Like_azure_SQL_password": {
+			"value": ""
+		},
+		"Link OnPrem_password": {
+			"value": ""
+		},
+		"ADLS_Link_properties_typeProperties_url": {
+			"value": "https://kenyo20240803.dfs.core.windows.net/"
+		},
+		"Like_azure_SQL_properties_typeProperties_server": {
+			"value": "kenyo20240803.database.windows.net"
+		},
+		"Like_azure_SQL_properties_typeProperties_database": {
+			"value": "kenyo20240803"
+		},
+		"Like_azure_SQL_properties_typeProperties_userName": {
+			"value": "emmanuel"
+		},
+		"Link OnPrem_properties_typeProperties_server": {
+			"value": "DESKTOP-UTBS4D5\\KENYOMDX"
+		},
+		"Link OnPrem_properties_typeProperties_database": {
+			"value": "TescaOLTP"
+		},
+		"Link OnPrem_properties_typeProperties_userName": {
+			"value": "kenyo"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

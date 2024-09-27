@@ -1,0 +1,194 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "kenyo20240803"
+		},
+		"ADLS_Link_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ADLS_Link'"
+		},
+		"Like_azure_SQL_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'Like_azure_SQL'"
+		},
+		"Link OnPrem_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'Link OnPrem'"
+		},
+		"ADLS_Link_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://kenyo20240803.dfs.core.windows.net/"
+		},
+		"Like_azure_SQL_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "kenyo20240803.database.windows.net"
+		},
+		"Like_azure_SQL_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "kenyo20240803"
+		},
+		"Like_azure_SQL_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "emmanuel"
+		},
+		"Link OnPrem_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "DESKTOP-UTBS4D5\\KENYOMDX"
+		},
+		"Link OnPrem_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "TescaOLTP"
+		},
+		"Link OnPrem_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "kenyo"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Load_Dimensional_data_from_OnPrem')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup-OnPrem Dimension Data",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "---Extract the dimension data\nSELECT \n    s.name AS SchemaName,\n    t.name AS TableName\nFROM \n    TescaOLTP.sys.tables t\nINNER JOIN \n    TescaOLTP.sys.schemas s\nON \n    t.schema_id = s.schema_id\nWHERE \n    t.name != 'PurchaseAnalysis'\n\tAND t.name != 'SalesAnalysis'\n\tAND t.name != 'sysdiagrams'",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "OnPrem_Dimensional_Dataset",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/OnPrem_Dimensional_Dataset')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OnPrem_Dimensional_Dataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Link OnPrem",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Link OnPrem')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ADLS_Link')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ADLS_Link_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ADLS_Link_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Like_azure_SQL')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('Like_azure_SQL_properties_typeProperties_server')]",
+					"database": "[parameters('Like_azure_SQL_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('Like_azure_SQL_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('Like_azure_SQL_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Link OnPrem')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('Link OnPrem_properties_typeProperties_server')]",
+					"database": "[parameters('Link OnPrem_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": true,
+					"authenticationType": "SQL",
+					"userName": "[parameters('Link OnPrem_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('Link OnPrem_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "SHIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/SHIR')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SHIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		}
+	]
+}
