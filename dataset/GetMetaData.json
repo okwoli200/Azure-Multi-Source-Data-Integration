@@ -1,0 +1,42 @@
+{
+	"name": "GetMetaData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Like_azure_SQL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SourceTableName",
+				"type": "varchar"
+			},
+			{
+				"name": "StagingTableName",
+				"type": "varchar"
+			},
+			{
+				"name": "MigrationSPROC",
+				"type": "nvarchar"
+			},
+			{
+				"name": "LoadIntoStaging",
+				"type": "bit"
+			},
+			{
+				"name": "LoadIntoDBO",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "Integration",
+			"table": "GetMetaData"
+		}
+	}
+}
