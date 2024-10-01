@@ -1,0 +1,50 @@
+{
+	"name": "Dimension_Dataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ADLS_Link",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"folder": {
+				"type": "string"
+			},
+			"file": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().file",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().folder",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "CityID",
+				"type": "String"
+			},
+			{
+				"name": "CityName",
+				"type": "String"
+			},
+			{
+				"name": "StateID",
+				"type": "String"
+			}
+		]
+	}
+}
