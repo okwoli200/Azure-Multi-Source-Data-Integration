@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "---Extract the dimension data\nSELECT \n    s.name AS SchemaName,\n    t.name AS TableName\nFROM \n    TescaOLTP.sys.tables t\nINNER JOIN \n    TescaOLTP.sys.schemas s\nON \n    t.schema_id = s.schema_id\nWHERE \n    t.name != 'PurchaseAnalysis'\n\tAND t.name != 'SalesAnalysis'\n\tAND t.name != 'sysdiagrams'",
+						"sqlReaderQuery": "SELECT \n    s.name AS SchemaName,\n    t.name AS TableName\nFROM \n    TescaOLTP.sys.tables t\nINNER JOIN \n    TescaOLTP.sys.schemas s\nON \n    t.schema_id = s.schema_id\nWHERE \n    t.name != 'PurchaseTransaction'\n\tAND t.name != 'SalesTransaction'\n\tAND t.name != 'sysdiagrams'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -62,7 +62,10 @@
 							"typeProperties": {
 								"source": {
 									"type": "SqlServerSource",
-									"sqlReaderQuery": "@{concat('SELECT * FROM ', item().schemaName, '.', item().TableName)} ",
+									"sqlReaderQuery": {
+										"value": "@{concat('SELECT * FROM ', item().schemaName, '.', item().TableName)} ",
+										"type": "Expression"
+									},
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
