@@ -22,7 +22,7 @@
 						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "OnPrem_Dimensional_Dataset",
+						"referenceName": "OnPrem_Fact_Table",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
@@ -90,7 +90,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "OnPrem_Dimensional_Dataset",
+									"referenceName": "OnPrem_Fact_Table",
 									"type": "DatasetReference"
 								}
 							],

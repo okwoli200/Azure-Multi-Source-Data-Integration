@@ -1,0 +1,12 @@
+{
+	"name": "OnPrem_Fact_Table",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Link OnPrem",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": []
+	}
+}
