@@ -342,6 +342,43 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Fact_Dataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ADLS_Link",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat(dataset().TableName, '_', formatDateTime(addDays(utcNow(), -1), 'yyyy-MM-dd'), '.snappy.parquet')",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@concat('live', '/', dataset().TableName)",
+							"type": "Expression"
+						},
+						"fileSystem": "fact"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ADLS_Link')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DL_toEDW')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -743,6 +780,133 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/DL_toEDW')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Load_Fact_tables_from_OnPrem_copy')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup-OnPremFact Table",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT \n    s.name AS SchemaName,\n    t.name AS TableName\nFROM \n    sys.tables t\nINNER JOIN \n    sys.schemas s\nON \n    t.schema_id = s.schema_id\nWHERE \n    (t.name = 'PurchaseTransaction' AND EXISTS (\n            SELECT 1 \n            FROM PurchaseTransaction pt \n            WHERE t.object_id = OBJECT_ID('PurchaseTransaction')\n              AND CONVERT(DATE, pt.TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    )) \n    OR \n    (t.name = 'SalesTransaction' AND EXISTS (\n            SELECT 1 \n            FROM SalesTransaction st \n            WHERE t.object_id = OBJECT_ID('SalesTransaction')\n              AND CONVERT(DATE, st.TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    ))",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "OnPrem_Dimensional_Dataset",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach Dimensional Data",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup-OnPremFact Table",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup-OnPremFact Table').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Copy Fact Tables",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "\t@{concat('SELECT * FROM ', item().schemaName, '.', item().TableName, ' WHERE CONVERT(DATE, TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))')}",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "OnPrem_Dimensional_Dataset",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "Fact_Dataset",
+											"type": "DatasetReference",
+											"parameters": {
+												"TableName": {
+													"value": "@item().TableName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/OnPrem_Dimensional_Dataset')]",
+				"[concat(variables('factoryId'), '/datasets/Fact_Dataset')]"
 			]
 		}
 	]
