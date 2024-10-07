@@ -47,18 +47,6 @@
 			"type": "string",
 			"defaultValue": "Tesca"
 		},
-		"Load DImension Data_properties_DL_toEDW_parameters_folder": {
-			"type": "string",
-			"defaultValue": "@triggerBody().folderPath"
-		},
-		"Load DImension Data_properties_DL_toEDW_parameters_file": {
-			"type": "string",
-			"defaultValue": "@triggerBody().fileName"
-		},
-		"Load DImension Data_properties_typeProperties_scope": {
-			"type": "string",
-			"defaultValue": "/subscriptions/b28c3f0b-9bc9-4ace-b8f5-e04d014dde42/resourceGroups/rg-emmanuel/providers/Microsoft.Storage/storageAccounts/kenyo20240803"
-		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -115,15 +103,6 @@
 					},
 					"Link OnPrem_properties_typeProperties_userName": {
 						"value": "[parameters('Link OnPrem_properties_typeProperties_userName')]"
-					},
-					"Load DImension Data_properties_DL_toEDW_parameters_folder": {
-						"value": "[parameters('Load DImension Data_properties_DL_toEDW_parameters_folder')]"
-					},
-					"Load DImension Data_properties_DL_toEDW_parameters_file": {
-						"value": "[parameters('Load DImension Data_properties_DL_toEDW_parameters_file')]"
-					},
-					"Load DImension Data_properties_typeProperties_scope": {
-						"value": "[parameters('Load DImension Data_properties_typeProperties_scope')]"
 					}
 				}
 			},
