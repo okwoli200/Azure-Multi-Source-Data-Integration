@@ -874,6 +874,44 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Load Dimension data from OnPrem')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Load_Dimension_Tables_from_OnPrem",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Week",
+						"interval": 2,
+						"startTime": "2024-10-15T00:30:00",
+						"timeZone": "Mountain Standard Time",
+						"schedule": {
+							"minutes": [
+								30
+							],
+							"hours": [
+								0
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Load_Dimension_Tables_from_OnPrem')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Load Dimensional Data')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
