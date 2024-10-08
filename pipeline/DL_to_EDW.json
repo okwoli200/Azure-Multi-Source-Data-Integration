@@ -74,7 +74,7 @@
 											"type": "DelimitedTextSource",
 											"additionalColumns": [
 												{
-													"name": "lineage",
+													"name": "Lineage",
 													"value": {
 														"value": "@concat(pipeline().parameters.folder, '/', pipeline().parameters.fileName)",
 														"type": "Expression"
