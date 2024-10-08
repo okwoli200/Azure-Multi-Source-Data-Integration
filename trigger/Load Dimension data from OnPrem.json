@@ -1,0 +1,32 @@
+{
+	"name": "Load Dimension data from OnPrem",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Load_Dimension_Tables_from_OnPrem",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Week",
+				"interval": 2,
+				"startTime": "2024-10-15T00:30:00",
+				"timeZone": "Mountain Standard Time",
+				"schedule": {
+					"minutes": [
+						30
+					],
+					"hours": [
+						0
+					]
+				}
+			}
+		}
+	}
+}
