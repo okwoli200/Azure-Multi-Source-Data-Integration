@@ -35,6 +35,15 @@
 		"Link OnPrem_properties_typeProperties_userName": {
 			"value": "Tesca"
 		},
+		"Load Dimensional Data_properties_DL_to_EDW_parameters_folder": {
+			"value": "@triggerBody().folderPath"
+		},
+		"Load Dimensional Data_properties_DL_to_EDW_parameters_fileName": {
+			"value": "@triggerBody().fileName"
+		},
+		"Load Dimensional Data_properties_typeProperties_scope": {
+			"value": "/subscriptions/b28c3f0b-9bc9-4ace-b8f5-e04d014dde42/resourceGroups/rg-emmanuel/providers/Microsoft.Storage/storageAccounts/kenyo20240803"
+		},
 		"containerUri": {
 			"value": ""
 		},

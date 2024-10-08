@@ -46,12 +46,189 @@
 		"Link OnPrem_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "Tesca"
+		},
+		"Load Dimensional Data_properties_DL_to_EDW_parameters_folder": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"Load Dimensional Data_properties_DL_to_EDW_parameters_fileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"Load Dimensional Data_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/b28c3f0b-9bc9-4ace-b8f5-e04d014dde42/resourceGroups/rg-emmanuel/providers/Microsoft.Storage/storageAccounts/kenyo20240803"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/DL_to_EDW')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup MetaData",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:10:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "[[Integration].[GetMetaDataTriggerPath]",
+								"storedProcedureParameters": {
+									"triggerPath": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.folder",
+											"type": "Expression"
+										}
+									}
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "Get_MetaData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "LoadIntoStaging",
+						"type": "Switch",
+						"dependsOn": [
+							{
+								"activity": "Lookup MetaData",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"on": {
+								"value": "@if(activity('Lookup MetaData').output.firstRow.LoadIntoStaging,substring(pipeline().parameters.folder,0,indexof(pipeline().parameters.folder,'/')),'')",
+								"type": "Expression"
+							},
+							"cases": [
+								{
+									"value": "dimension",
+									"activities": [
+										{
+											"name": "Copy dimension data",
+											"type": "Copy",
+											"dependsOn": [],
+											"policy": {
+												"timeout": "0.12:00:00",
+												"retry": 0,
+												"retryIntervalInSeconds": 30,
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"source": {
+													"type": "DelimitedTextSource",
+													"additionalColumns": [
+														{
+															"name": "lineage",
+															"value": {
+																"value": "@concat(pipeline().parameters.folder, '/', pipeline().parameters.fileName)",
+																"type": "Expression"
+															}
+														}
+													],
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": true,
+														"enablePartitionDiscovery": false
+													},
+													"formatSettings": {
+														"type": "DelimitedTextReadSettings"
+													}
+												},
+												"sink": {
+													"type": "AzureSqlSink",
+													"writeBehavior": "insert",
+													"sqlWriterUseTableLock": false
+												},
+												"enableStaging": false,
+												"translator": {
+													"type": "TabularTranslator",
+													"typeConversion": true,
+													"typeConversionSettings": {
+														"allowDataTruncation": true,
+														"treatBooleanAsNumber": false
+													}
+												}
+											},
+											"inputs": [
+												{
+													"referenceName": "DL_to_EDW_Dimension_Data",
+													"type": "DatasetReference",
+													"parameters": {
+														"folder": {
+															"value": "@pipeline().parameters.folder",
+															"type": "Expression"
+														},
+														"fileName": {
+															"value": "@pipeline().parameters.fileName",
+															"type": "Expression"
+														}
+													}
+												}
+											],
+											"outputs": [
+												{
+													"referenceName": "Staging_DB",
+													"type": "DatasetReference",
+													"parameters": {
+														"Schema": "Staging",
+														"TableName": {
+															"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
+															"type": "Expression"
+														}
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"folder": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Get_MetaData')]",
+				"[concat(variables('factoryId'), '/datasets/DL_to_EDW_Dimension_Data')]",
+				"[concat(variables('factoryId'), '/datasets/Staging_DB')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Load_Dimension_Tables_from_OnPrem')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -309,6 +486,62 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DL_to_EDW_Dimension_Data')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ADLS_Link",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"folder": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().folder",
+							"type": "Expression"
+						},
+						"fileSystem": "dimension"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "CityID",
+						"type": "String"
+					},
+					{
+						"name": "CityName",
+						"type": "String"
+					},
+					{
+						"name": "StateID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ADLS_Link')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Dimesional_Dataset')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -399,6 +632,53 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Get_MetaData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Like_azure_SQL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SourceTableName",
+						"type": "varchar"
+					},
+					{
+						"name": "StagingTableName",
+						"type": "varchar"
+					},
+					{
+						"name": "MigrationSPROC",
+						"type": "nvarchar"
+					},
+					{
+						"name": "LoadIntoStaging",
+						"type": "bit"
+					},
+					{
+						"name": "LoadIntoDBO",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "Integration",
+					"table": "GetMetaData"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Like_azure_SQL')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/OnPrem_Dimensional_Dataset')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -432,6 +712,41 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/Link OnPrem')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Staging_DB')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Like_azure_SQL",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Schema": {
+						"type": "string"
+					},
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().Schema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Like_azure_SQL')]"
 			]
 		},
 		{
@@ -499,6 +814,40 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/SHIR3')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Load Dimensional Data')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "DL_to_EDW",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"folder": "[parameters('Load Dimensional Data_properties_DL_to_EDW_parameters_folder')]",
+							"fileName": "[parameters('Load Dimensional Data_properties_DL_to_EDW_parameters_fileName')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/dimension/blobs/live",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Load Dimensional Data_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/DL_to_EDW')]"
 			]
 		},
 		{
