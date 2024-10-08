@@ -25,8 +25,7 @@
 				"folderPath": {
 					"value": "@dataset().folder",
 					"type": "Expression"
-				},
-				"fileSystem": "dimension"
+				}
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
