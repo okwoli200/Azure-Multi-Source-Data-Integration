@@ -1,0 +1,154 @@
+{
+	"name": "DL_to_EDW",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup MetaData",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.00:10:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "[Integration].[GetMetaDataTriggerPath]",
+						"storedProcedureParameters": {
+							"triggerPath": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.folder",
+									"type": "Expression"
+								}
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "Get_MetaData",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "LoadIntoStaging",
+				"type": "Switch",
+				"dependsOn": [
+					{
+						"activity": "Lookup MetaData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@if(activity('Lookup MetaData').output.firstRow.LoadIntoStaging,substring(pipeline().parameters.folder,0,indexof(pipeline().parameters.folder,'/')),'')",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "dimension",
+							"activities": [
+								{
+									"name": "Copy dimension data",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"additionalColumns": [
+												{
+													"name": "lineage",
+													"value": {
+														"value": "@concat(pipeline().parameters.folder, '/', pipeline().parameters.fileName)",
+														"type": "Expression"
+													}
+												}
+											],
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DL_to_EDW_Dimension_Data",
+											"type": "DatasetReference",
+											"parameters": {
+												"folder": {
+													"value": "@pipeline().parameters.folder",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.fileName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "Staging_DB",
+											"type": "DatasetReference",
+											"parameters": {
+												"Schema": "Staging",
+												"TableName": {
+													"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"folder": {
+				"type": "string"
+			},
+			"fileName": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}
