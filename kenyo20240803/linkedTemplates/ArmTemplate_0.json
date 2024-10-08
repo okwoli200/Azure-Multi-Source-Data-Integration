@@ -604,7 +604,7 @@
 						}
 					},
 					{
-						"name": "ForEach Fact Tables",
+						"name": "ForEach Dimension Tables",
 						"type": "ForEach",
 						"dependsOn": [
 							{
