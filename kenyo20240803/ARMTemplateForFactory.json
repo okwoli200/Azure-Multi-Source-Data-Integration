@@ -58,6 +58,18 @@
 		"Load Dimensional Data_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/b28c3f0b-9bc9-4ace-b8f5-e04d014dde42/resourceGroups/rg-emmanuel/providers/Microsoft.Storage/storageAccounts/kenyo20240803"
+		},
+		"Load Fact Tables_properties_DL_to_EDW_parameters_folder": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"Load Fact Tables_properties_DL_to_EDW_parameters_fileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"Load Fact Tables_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/b28c3f0b-9bc9-4ace-b8f5-e04d014dde42/resourceGroups/rg-emmanuel/providers/Microsoft.Storage/storageAccounts/kenyo20240803"
 		}
 	},
 	"variables": {
@@ -205,6 +217,89 @@
 											]
 										}
 									]
+								},
+								{
+									"value": "fact",
+									"activities": [
+										{
+											"name": "Copy fact tables",
+											"type": "Copy",
+											"dependsOn": [],
+											"policy": {
+												"timeout": "0.12:00:00",
+												"retry": 0,
+												"retryIntervalInSeconds": 30,
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"source": {
+													"type": "ParquetSource",
+													"additionalColumns": [
+														{
+															"name": "Lineage",
+															"value": {
+																"value": "@concat(pipeline().parameters.folder, '/',pipeline().parameters.fileName)",
+																"type": "Expression"
+															}
+														}
+													],
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": true,
+														"enablePartitionDiscovery": false
+													},
+													"formatSettings": {
+														"type": "ParquetReadSettings"
+													}
+												},
+												"sink": {
+													"type": "AzureSqlSink",
+													"writeBehavior": "insert",
+													"sqlWriterUseTableLock": false
+												},
+												"enableStaging": false,
+												"translator": {
+													"type": "TabularTranslator",
+													"typeConversion": true,
+													"typeConversionSettings": {
+														"allowDataTruncation": true,
+														"treatBooleanAsNumber": false
+													}
+												}
+											},
+											"inputs": [
+												{
+													"referenceName": "DL_to_EDW_Fact_Tables",
+													"type": "DatasetReference",
+													"parameters": {
+														"folder": {
+															"value": "@pipeline().parameters.folder",
+															"type": "Expression"
+														},
+														"fileName": {
+															"value": "@pipeline().parameters.fileName",
+															"type": "Expression"
+														}
+													}
+												}
+											],
+											"outputs": [
+												{
+													"referenceName": "Staging_DB",
+													"type": "DatasetReference",
+													"parameters": {
+														"Schema": "Staging",
+														"TableName": {
+															"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
+															"type": "Expression"
+														}
+													}
+												}
+											]
+										}
+									]
 								}
 							]
 						}
@@ -284,7 +379,8 @@
 				"[concat(variables('factoryId'), '/datasets/Get_MetaData')]",
 				"[concat(variables('factoryId'), '/linkedServices/Like_azure_SQL')]",
 				"[concat(variables('factoryId'), '/datasets/DL_to_EDW_Dimension_Data')]",
-				"[concat(variables('factoryId'), '/datasets/Staging_DB')]"
+				"[concat(variables('factoryId'), '/datasets/Staging_DB')]",
+				"[concat(variables('factoryId'), '/datasets/DL_to_EDW_Fact_Tables')]"
 			]
 		},
 		{
@@ -593,6 +689,45 @@
 						"type": "String"
 					}
 				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ADLS_Link')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DL_to_EDW_Fact_Tables')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ADLS_Link",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"folder": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().folder",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ADLS_Link')]"
@@ -936,6 +1071,40 @@
 					"blobPathEndsWith": ".csv",
 					"ignoreEmptyBlobs": true,
 					"scope": "[parameters('Load Dimensional Data_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/DL_to_EDW')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Load Fact Tables')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "DL_to_EDW",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"folder": "[parameters('Load Fact Tables_properties_DL_to_EDW_parameters_folder')]",
+							"fileName": "[parameters('Load Fact Tables_properties_DL_to_EDW_parameters_fileName')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/fact/blobs/live",
+					"blobPathEndsWith": ".parquet",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Load Fact Tables_properties_typeProperties_scope')]",
 					"events": [
 						"Microsoft.Storage.BlobCreated"
 					]
