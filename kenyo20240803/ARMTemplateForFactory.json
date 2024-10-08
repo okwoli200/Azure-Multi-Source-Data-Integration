@@ -208,6 +208,63 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "Load Into EDW",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "LoadIntoStaging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoDBO",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "Stored procedure-Staging to EDW",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[[Integration].[staging_to_db]",
+										"storedProcedureParameters": {
+											"dataset": {
+												"value": {
+													"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"lineage": {
+												"value": {
+													"value": "@concat(pipeline().parameters.folder, '/', pipeline().parameters.fileName)",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "Like_azure_SQL",
+										"type": "LinkedServiceReference"
+									}
+								}
+							]
+						}
 					}
 				],
 				"policy": {
@@ -225,6 +282,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/Get_MetaData')]",
+				"[concat(variables('factoryId'), '/linkedServices/Like_azure_SQL')]",
 				"[concat(variables('factoryId'), '/datasets/DL_to_EDW_Dimension_Data')]",
 				"[concat(variables('factoryId'), '/datasets/Staging_DB')]"
 			]
