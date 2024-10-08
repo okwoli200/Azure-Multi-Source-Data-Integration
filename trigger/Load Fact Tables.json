@@ -1,0 +1,18 @@
+{
+	"name": "Load Fact Tables",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/fact/blobs/live",
+			"blobPathEndsWith": ".parquet",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/b28c3f0b-9bc9-4ace-b8f5-e04d014dde42/resourceGroups/rg-emmanuel/providers/Microsoft.Storage/storageAccounts/kenyo20240803",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
