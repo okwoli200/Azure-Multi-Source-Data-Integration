@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "SELECT \n    s.name AS SchemaName,\n    t.name AS TableName\nFROM \n    sys.tables t\nINNER JOIN \n    sys.schemas s\nON \n    t.schema_id = s.schema_id\nWHERE \n    (t.name = 'PurchaseTransaction' AND EXISTS (\n            SELECT 1 \n            FROM PurchaseTransaction pt \n            WHERE t.object_id = OBJECT_ID('PurchaseTransaction')\n              AND CONVERT(DATE, pt.TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    )) \n    OR \n    (t.name = 'SalesTransaction' AND EXISTS (\n            SELECT 1 \n            FROM SalesTransaction st \n            WHERE t.object_id = OBJECT_ID('SalesTransaction')\n              AND CONVERT(DATE, st.TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    ))\n",
+						"sqlReaderQuery": "SELECT \n    s.name AS SchemaName,\n    t.name AS TableName\nFROM \n    sys.tables t\nINNER JOIN \n    sys.schemas s\nON \n    t.schema_id = s.schema_id\nWHERE \n    (t.name = 'PurchaseTransaction' AND EXISTS (\n            SELECT 1 \n            FROM PurchaseTransaction pt \n            WHERE t.object_id = OBJECT_ID('PurchaseTransaction')\n              AND CONVERT(DATE, pt.TransDate) = DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    )) \n    OR \n    (t.name = 'SalesTransaction' AND EXISTS (\n            SELECT 1 \n            FROM SalesTransaction st \n            WHERE t.object_id = OBJECT_ID('SalesTransaction')\n              AND CONVERT(DATE, st.TransDate) = DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    ))\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -63,7 +63,7 @@
 								"source": {
 									"type": "SqlServerSource",
 									"sqlReaderQuery": {
-										"value": "@{concat('SELECT * FROM ', item().schemaName, '.', item().TableName, ' WHERE CONVERT(DATE, TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))')}",
+										"value": "@{concat('SELECT * FROM ', item().schemaName, '.', item().TableName, ' WHERE CONVERT(DATE, TransDate) = DATEADD(day, -1, CONVERT(DATE, GETDATE()))')}",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
