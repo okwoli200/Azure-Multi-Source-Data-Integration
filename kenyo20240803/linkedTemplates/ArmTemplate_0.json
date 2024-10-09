@@ -912,7 +912,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlServerSource",
-								"sqlReaderQuery": "SELECT \n    s.name AS SchemaName,\n    t.name AS TableName\nFROM \n    sys.tables t\nINNER JOIN \n    sys.schemas s\nON \n    t.schema_id = s.schema_id\nWHERE \n    (t.name = 'PurchaseTransaction' AND EXISTS (\n            SELECT 1 \n            FROM PurchaseTransaction pt \n            WHERE t.object_id = OBJECT_ID('PurchaseTransaction')\n              AND CONVERT(DATE, pt.TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    )) \n    OR \n    (t.name = 'SalesTransaction' AND EXISTS (\n            SELECT 1 \n            FROM SalesTransaction st \n            WHERE t.object_id = OBJECT_ID('SalesTransaction')\n              AND CONVERT(DATE, st.TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    ))\n",
+								"sqlReaderQuery": "SELECT \n    s.name AS SchemaName,\n    t.name AS TableName\nFROM \n    sys.tables t\nINNER JOIN \n    sys.schemas s\nON \n    t.schema_id = s.schema_id\nWHERE \n    (t.name = 'PurchaseTransaction' AND EXISTS (\n            SELECT 1 \n            FROM PurchaseTransaction pt \n            WHERE t.object_id = OBJECT_ID('PurchaseTransaction')\n              AND CONVERT(DATE, pt.TransDate) = DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    )) \n    OR \n    (t.name = 'SalesTransaction' AND EXISTS (\n            SELECT 1 \n            FROM SalesTransaction st \n            WHERE t.object_id = OBJECT_ID('SalesTransaction')\n              AND CONVERT(DATE, st.TransDate) = DATEADD(day, -1, CONVERT(DATE, GETDATE()))\n    ))\n",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -959,7 +959,7 @@
 										"source": {
 											"type": "SqlServerSource",
 											"sqlReaderQuery": {
-												"value": "@{concat('SELECT * FROM ', item().schemaName, '.', item().TableName, ' WHERE CONVERT(DATE, TransDate) <= DATEADD(day, -1, CONVERT(DATE, GETDATE()))')}",
+												"value": "@{concat('SELECT * FROM ', item().schemaName, '.', item().TableName, ' WHERE CONVERT(DATE, TransDate) = DATEADD(day, -1, CONVERT(DATE, GETDATE()))')}",
 												"type": "Expression"
 											},
 											"queryTimeout": "02:00:00",
@@ -1122,6 +1122,66 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/Load_Dimension_Tables_from_OnPrem')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Load Fact Table from OnPrem')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Load_Fact_Tables_from_OnPrem",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2024-10-08T01:07:00",
+						"timeZone": "Mountain Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Load_Fact_Tables_from_OnPrem')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Load Fact Tables OnPrem')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Load_Fact_Tables_from_OnPrem",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2024-10-08T01:10:00",
+						"timeZone": "Mountain Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Load_Fact_Tables_from_OnPrem')]"
 			]
 		}
 	]
