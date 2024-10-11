@@ -1,0 +1,24 @@
+{
+	"name": "Load_Fact_Tables_OnPrem",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Load_Fact_Tables_from_OnPrem",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2024-10-11T08:30:00",
+				"timeZone": "Mountain Standard Time"
+			}
+		}
+	}
+}
