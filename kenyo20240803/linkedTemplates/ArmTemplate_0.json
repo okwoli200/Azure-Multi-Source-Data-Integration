@@ -552,7 +552,7 @@
 													"parameters": {
 														"Schema": "Staging",
 														"TableName": {
-															"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
+															"value": "@activity('Lookup MetaData').output.firstRow.StagingTables",
 															"type": "Expression"
 														}
 													}
@@ -661,7 +661,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"expression": {
-								"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoDBO",
+								"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoEDW",
 								"type": "Expression"
 							},
 							"ifTrueActivities": [
@@ -682,7 +682,7 @@
 										"storedProcedureParameters": {
 											"dataset": {
 												"value": {
-													"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
+													"value": "@activity('Lookup MetaData').output.firstRow.StagingTables",
 													"type": "Expression"
 												},
 												"type": "String"
@@ -1125,7 +1125,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Load Fact Table from OnPrem')]",
+			"name": "[concat(parameters('factoryName'), '/Load_Fact_Tables_OnPrem')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1145,9 +1145,8 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2024-10-08T08:30:00",
-						"timeZone": "Mountain Standard Time",
-						"schedule": {}
+						"startTime": "2024-10-11T08:30:00",
+						"timeZone": "Mountain Standard Time"
 					}
 				}
 			},
