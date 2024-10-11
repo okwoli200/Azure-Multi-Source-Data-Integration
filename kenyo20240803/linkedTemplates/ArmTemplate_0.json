@@ -1145,38 +1145,9 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 1,
-						"startTime": "2024-10-08T01:07:00",
-						"timeZone": "Mountain Standard Time"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Load_Fact_Tables_from_OnPrem')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Load Fact Tables OnPrem')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "Load_Fact_Tables_from_OnPrem",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2024-10-08T01:10:00",
-						"timeZone": "Mountain Standard Time"
+						"startTime": "2024-10-08T08:30:00",
+						"timeZone": "Mountain Standard Time",
+						"schedule": {}
 					}
 				}
 			},
