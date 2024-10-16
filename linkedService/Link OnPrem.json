@@ -5,16 +5,16 @@
 		"annotations": [],
 		"type": "SqlServer",
 		"typeProperties": {
-			"server": "EMMANUEL\\EMMAMDX",
+			"server": "DESKTOP-UTBS4D5\\KENYOMDX",
 			"database": "TescaOLTP",
 			"encrypt": "mandatory",
 			"trustServerCertificate": true,
 			"authenticationType": "SQL",
-			"userName": "Tesca",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJmY2M3NGJhOC1lNTI0LTQ0NTgtYjEwOC05Y2QyZTA2MmI1NWYiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"userName": "kenyo",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJiZTEwZGYxNS01NmQ2LTRmMGYtYThjZS04MjRjMDAxMzYzYWYiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
-			"referenceName": "SHIR3",
+			"referenceName": "SHIR",
 			"type": "IntegrationRuntimeReference"
 		}
 	}
