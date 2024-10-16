@@ -37,7 +37,7 @@
 		},
 		"Link OnPrem_properties_typeProperties_server": {
 			"type": "string",
-			"defaultValue": "EMMANUEL\\EMMAMDX"
+			"defaultValue": "DESKTOP-UTBS4D5\\KENYOMDX"
 		},
 		"Link OnPrem_properties_typeProperties_database": {
 			"type": "string",
@@ -45,7 +45,7 @@
 		},
 		"Link OnPrem_properties_typeProperties_userName": {
 			"type": "string",
-			"defaultValue": "Tesca"
+			"defaultValue": "kenyo"
 		},
 		"Load Dimensional Data_properties_DL_to_EDW_parameters_folder": {
 			"type": "string",

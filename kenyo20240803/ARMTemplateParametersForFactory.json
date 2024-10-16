@@ -27,13 +27,13 @@
 			"value": "emmanuel"
 		},
 		"Link OnPrem_properties_typeProperties_server": {
-			"value": "EMMANUEL\\EMMAMDX"
+			"value": "DESKTOP-UTBS4D5\\KENYOMDX"
 		},
 		"Link OnPrem_properties_typeProperties_database": {
 			"value": "TescaOLTP"
 		},
 		"Link OnPrem_properties_typeProperties_userName": {
-			"value": "Tesca"
+			"value": "kenyo"
 		},
 		"Load Dimensional Data_properties_DL_to_EDW_parameters_folder": {
 			"value": "@triggerBody().folderPath"

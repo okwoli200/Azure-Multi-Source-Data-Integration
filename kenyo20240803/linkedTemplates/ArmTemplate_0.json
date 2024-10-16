@@ -37,7 +37,7 @@
 		},
 		"Link OnPrem_properties_typeProperties_server": {
 			"type": "string",
-			"defaultValue": "EMMANUEL\\EMMAMDX"
+			"defaultValue": "DESKTOP-UTBS4D5\\KENYOMDX"
 		},
 		"Link OnPrem_properties_typeProperties_database": {
 			"type": "string",
@@ -45,7 +45,7 @@
 		},
 		"Link OnPrem_properties_typeProperties_userName": {
 			"type": "string",
-			"defaultValue": "Tesca"
+			"defaultValue": "kenyo"
 		},
 		"Load Dimensional Data_properties_DL_to_EDW_parameters_folder": {
 			"type": "string",
@@ -112,6 +112,16 @@
 						"value": "[parameters('Like_azure_SQL_password')]"
 					}
 				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SHIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},
@@ -411,12 +421,12 @@
 					}
 				},
 				"connectVia": {
-					"referenceName": "SHIR3",
+					"referenceName": "SHIR",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/SHIR3')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/SHIR')]"
 			]
 		},
 		{
