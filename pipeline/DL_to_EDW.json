@@ -211,7 +211,7 @@
 											"parameters": {
 												"Schema": "Staging",
 												"TableName": {
-													"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
+													"value": "@activity('Lookup MetaData').output.firstRow.StagingTables",
 													"type": "Expression"
 												}
 											}
