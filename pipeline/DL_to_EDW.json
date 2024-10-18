@@ -128,7 +128,7 @@
 											"parameters": {
 												"Schema": "Staging",
 												"TableName": {
-													"value": "@activity('Lookup MetaData').output.firstRow.StagingTables",
+													"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
 													"type": "Expression"
 												}
 											}
@@ -224,7 +224,7 @@
 				}
 			},
 			{
-				"name": "Load Into EDW",
+				"name": "Load Into DBO",
 				"type": "IfCondition",
 				"dependsOn": [
 					{
@@ -237,7 +237,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoEDW",
+						"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoDBO",
 						"type": "Expression"
 					},
 					"ifTrueActivities": [
@@ -258,7 +258,7 @@
 								"storedProcedureParameters": {
 									"dataset": {
 										"value": {
-											"value": "@activity('Lookup MetaData').output.firstRow.StagingTables",
+											"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
 											"type": "Expression"
 										},
 										"type": "String"
