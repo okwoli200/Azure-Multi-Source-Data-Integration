@@ -224,7 +224,7 @@
 				}
 			},
 			{
-				"name": "Load Into EDW",
+				"name": "Load Into DBO",
 				"type": "IfCondition",
 				"dependsOn": [
 					{
@@ -237,7 +237,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoEDW",
+						"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoDBO",
 						"type": "Expression"
 					},
 					"ifTrueActivities": [
