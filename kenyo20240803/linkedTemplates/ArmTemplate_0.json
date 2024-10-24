@@ -126,16 +126,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/SHIR3')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/DL_to_EDW_Dimension_Data')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -562,7 +552,7 @@
 													"parameters": {
 														"Schema": "Staging",
 														"TableName": {
-															"value": "@activity('Lookup MetaData').output.firstRow.StagingTables",
+															"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
 															"type": "Expression"
 														}
 													}
@@ -658,7 +648,7 @@
 						}
 					},
 					{
-						"name": "Load Into EDW",
+						"name": "Load Into DBO",
 						"type": "IfCondition",
 						"dependsOn": [
 							{
@@ -671,7 +661,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"expression": {
-								"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoEDW",
+								"value": "@activity('Lookup MetaData').output.firstRow.LoadIntoDBO",
 								"type": "Expression"
 							},
 							"ifTrueActivities": [
@@ -692,7 +682,7 @@
 										"storedProcedureParameters": {
 											"dataset": {
 												"value": {
-													"value": "@activity('Lookup MetaData').output.firstRow.StagingTables",
+													"value": "@activity('Lookup MetaData').output.firstRow.StagingTableName",
 													"type": "Expression"
 												},
 												"type": "String"
