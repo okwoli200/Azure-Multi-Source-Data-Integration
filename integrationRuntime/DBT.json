@@ -1,0 +1,6 @@
+{
+	"name": "DBT",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
